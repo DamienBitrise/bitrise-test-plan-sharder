@@ -46,9 +46,9 @@ myProj.parse(function (err) {
         fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index));
     })
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
-    let quotedAndCommaSeparated = "'" + SOURCE_DIR + TEST_PLANS.join("','"+SOURCE_DIR) + "'";
+    let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
     console.log(SHARDS+' Test Plans Created:', quotedAndCommaSeparated);
-    process.env['test_plans'] = quotedAndCommaSeparated;
+    process.env.test_plans = quotedAndCommaSeparated;
 });
 
 function createTestPlan(target_uuid, shards, shardIndex){
