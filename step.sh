@@ -12,7 +12,7 @@ npm i xcode
 echo '$' "npm i uuid"
 npm i uuid
 
-chmod -R 777 $xcode_project
+# chmod -R 777 $xcode_project
 
 echo '$' "node "$THIS_SCRIPT_DIR/index.js""
 node "$THIS_SCRIPT_DIR/index.js"
