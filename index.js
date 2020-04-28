@@ -1,9 +1,11 @@
 // Inputs
+const SOURCE_DIR = process.env.source_dir + '/';
 const XCODE_PROJECT = process.env.xcode_project;//'Notes.xcodeproj';
 const SHARDS = process.env.shards;//2
 const TARGET = process.env.target;//'NotesUITests';
 const TYPE = process.env.file_type;//'.swift';
 
+console.log('SOURCE_DIR:',SOURCE_DIR)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
 console.log('SHARDS:',SHARDS)
@@ -15,8 +17,8 @@ const TEST_PLANS = [];
 const xcode = require('xcode'),
     fs = require('fs'),
     uuid = require('uuid'),
-    projectPath = XCODE_PROJECT + '/project.pbxproj',
-    outputProjectPath = XCODE_PROJECT + '/project.pbxproj',
+    projectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
+    outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
 
 
@@ -41,7 +43,7 @@ myProj.parse(function (err) {
         TEST_PLANS.push(shardName);
 
         myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
-        fs.writeFileSync(shardName, createTestPlan(target_uuid, [].concat(shards), index));
+        fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index));
     })
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
     console.log(SHARDS+' Test Plans Created:', TEST_PLANS);
