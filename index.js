@@ -39,7 +39,7 @@ myProj.parse(function (err) {
     const shards = shard(tests, shard_size);
 
     shards.forEach((shard, index) => {
-        let shardName = 'NotesUITests/TestShard_'+index+'.xctestplan';
+        let shardName = TARGET + '/TestShard_'+index+'.xctestplan';
         TEST_PLANS.push(shardName);
 
         myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
