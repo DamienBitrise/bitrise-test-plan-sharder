@@ -2,7 +2,7 @@
 const XCODE_PROJECT = process.env.xcode_project;//'Notes.xcodeproj';
 const SHARDS = process.env.shards;//2
 const TARGET = process.env.target;//'NotesUITests';
-const TYPE = process.env.type;//'.swift';
+const TYPE = process.env.file_type;//'.swift';
 
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
