@@ -47,7 +47,8 @@ myProj.parse(function (err) {
     })
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
     console.log(SHARDS+' Test Plans Created:', TEST_PLANS);
-    process.env['test_plans'] = TEST_PLANS;
+    let quotedAndCommaSeparated = "'" + TEST_PLANS.join("','") + "'";
+    process.env['test_plans'] = quotedAndCommaSeparated;
 });
 
 function createTestPlan(target_uuid, shards, shardIndex){
