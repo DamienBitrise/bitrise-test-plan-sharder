@@ -1,8 +1,8 @@
 // Inputs
-const XCODE_PROJECT = process.env.XCODE_PROJECT;//'Notes.xcodeproj';
-const SHARDS = process.env.SHARDS;//2
-const TARGET = process.env.TARGET;//'NotesUITests';
-const TYPE = process.env.TYPE;//'.swift';
+const XCODE_PROJECT = process.env.xcode_project;//'Notes.xcodeproj';
+const SHARDS = process.env.shards;//2
+const TARGET = process.env.target;//'NotesUITests';
+const TYPE = process.env.type;//'.swift';
 
 // Outputs
 const TEST_PLANS = [];
