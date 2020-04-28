@@ -3,9 +3,9 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_STEP_ID: build-router-collect
-  - BITRISE_STEP_VERSION: "0.9.0"
-  - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/bitrise-step-build-router-wait.git
+  - BITRISE_STEP_ID: build-test-plan-sharder
+  - BITRISE_STEP_VERSION: "0.1.0"
+  - BITRISE_STEP_GIT_CLONE_URL: https://github.com/DamienBitrise/bitrise-test-plan-sharder.git
   - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
   - TEST_WORKFLOWS: $TEST_WORKFLOWS
   - ACCESS_TOKEN: $ACCESS_TOKEN
