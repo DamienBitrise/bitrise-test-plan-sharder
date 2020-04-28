@@ -1,0 +1,52 @@
+title: "Shard Test Target into Test Plans"
+summary: "Shard Test Target into Test Plans"
+description: "Shard Test Target into Test Plans"
+website: https://github.com/DamienBitrise/bitrise-test-plan-sharder
+source_code_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder
+support_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder/issues
+host_os_tags:
+  - osx-10.10
+  - ubuntu-16.04
+type_tags:
+  - utility
+
+is_always_run: false
+is_skippable: false
+
+inputs:
+  - xcode_project:
+    opts:
+      title: XCode Project
+      summary: Location of your XCode Project
+      description: |
+          This is the location and name of your xcode project
+      is_required: true
+      is_sensitive: false
+  - target:
+    opts:
+      title: XCode Target
+      summary: The XCode Target to create Test Plans from
+      description: The XCode Target will be used to create Test Plans
+      is_required: true
+      is_sensitive: false
+  - shards:
+    opts:
+      title: How many Test Plans to create
+      summary: The number of Test Plans to generate
+      description: |
+          This will create Test Plans containing equal numbers of test cases
+      is_required: true
+      is_sensitive: false
+  - file_type: 
+    opts:
+      title: Test Class File Type
+      summary: '.swift' or '.m'
+      description: The Test Class Type
+      is_required: true
+      is_sensitive: false
+outputs:
+  - TEST_PLANS:
+    opts:
+      title: List of Test Plans Created
+      summary: List of Test Plans Created
+      description: List of Test Plans Created
