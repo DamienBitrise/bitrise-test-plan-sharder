@@ -47,7 +47,7 @@ myProj.parse(function (err) {
     })
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
     console.log(SHARDS+' Test Plans Created:', TEST_PLANS);
-    let quotedAndCommaSeparated = "'" + TEST_PLANS.join("','") + "'";
+    let quotedAndCommaSeparated = "'" + TEST_PLANS.join(SOURCE_DIR+"','") + "'";
     process.env['test_plans'] = quotedAndCommaSeparated;
 });
 
