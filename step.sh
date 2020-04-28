@@ -9,6 +9,9 @@ cd $THIS_SCRIPT_DIR
 echo '$' "npm i xcode"
 npm i xcode
 
+echo '$' "npm i uuid"
+npm i uuid
+
 echo '$' "node "$THIS_SCRIPT_DIR/index.js""
 node "$THIS_SCRIPT_DIR/index.js"
 
