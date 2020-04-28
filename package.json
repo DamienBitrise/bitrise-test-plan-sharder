@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "xcode": "^3.0.0"
+    "xcode": "^3.0.0",
+    "xml2json": "^0.12.0"
   }
 }

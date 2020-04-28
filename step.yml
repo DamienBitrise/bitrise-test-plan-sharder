@@ -35,6 +35,13 @@ inputs:
       description: The XCode Target will be used to create Test Plans
       is_required: true
       is_sensitive: false
+  - scheme:
+    opts:
+      title: XCode Scheme
+      summary: The XCode Scheme to test
+      description: The Test Plans will be added to this XCode Scheme
+      is_required: true
+      is_sensitive: false
   - shards:
     opts:
       title: How many Test Plans to create

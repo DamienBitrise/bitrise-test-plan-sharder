@@ -1,13 +1,15 @@
 // Inputs
 const SOURCE_DIR = process.env.source_dir + '/';
-const XCODE_PROJECT = process.env.xcode_project;//'Notes.xcodeproj';
-const SHARDS = process.env.shards;//2
-const TARGET = process.env.target;//'NotesUITests';
-const TYPE = process.env.file_type;//'.swift';
+const XCODE_PROJECT = process.env.xcode_project;
+const SHARDS = process.env.shards;
+const TARGET = process.env.target;
+const SCHEME = process.env.scheme;
+const TYPE = process.env.file_type;
 
 console.log('SOURCE_DIR:',SOURCE_DIR)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
+console.log('SCHEME:',SCHEME)
 console.log('SHARDS:',SHARDS)
 console.log('TYPE:',TYPE)
 
@@ -17,6 +19,7 @@ const TEST_PLANS = [];
 const xcode = require('xcode'),
     fs = require('fs'),
     uuid = require('uuid'),
+    parser = require('xml2json');
     projectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
@@ -37,19 +40,49 @@ myProj.parse(function (err) {
     const tests = myProj.getPBXGroupByKey(target_uuid).children.filter((test) => test.comment.indexOf(TYPE) != -1);
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
-
     shards.forEach((shard, index) => {
-        let shardName = 'NotesUITests/TestShard_'+index+'.xctestplan';
+        let shardName = 'TestShard_'+index+'.xctestplan';
         TEST_PLANS.push(shardName);
 
         myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
         fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index));
     })
+
+    addTestPlanToXCodeScheme(SOURCE_DIR + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme', TEST_PLANS);
+
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
     let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
     console.log(SHARDS+' Test Plans Created:', quotedAndCommaSeparated);
     process.env.test_plans = quotedAndCommaSeparated;
 });
+
+function addTestPlanToXCodeScheme(scheme, testPlans){
+    fs.readFile( scheme, function(err, data) {
+        if (err) {
+            console.error(err);
+            return; 
+        }
+        var json = JSON.parse(parser.toJson(data, {reversible: true}));
+
+        if(json.Scheme && json.Scheme.TestAction){
+            if(!json.Scheme.TestAction.TestPlans){
+                json.Scheme.TestAction.TestPlans = {
+                    TestPlanReference: []
+                }
+            }
+            testPlans.forEach((testPlan) => {
+                json.Scheme.TestAction.TestPlans.TestPlanReference.push({ reference: 'container:'+testPlan, '$t': '' })
+            })
+        }
+        var stringified = JSON.stringify(json);
+        var xml = parser.toXml(stringified);
+        fs.writeFile('new_scheme.xml', xml, function(err, data) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    });
+}
 
 function createTestPlan(target_uuid, shards, shardIndex){
     let skipTests = shards.filter((shard, index) => index != shardIndex);
