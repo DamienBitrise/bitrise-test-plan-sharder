@@ -18,8 +18,7 @@ inputs:
     opts:
       title: XCode Project
       summary: Location of your XCode Project
-      description: |
-          This is the location and name of your xcode project
+      description: This is the location and name of your xcode project
       is_required: true
       is_sensitive: false
   - target:
@@ -33,14 +32,13 @@ inputs:
     opts:
       title: How many Test Plans to create
       summary: The number of Test Plans to generate
-      description: |
-          This will create Test Plans containing equal numbers of test cases
+      description: This will create Test Plans containing equal numbers of test cases
       is_required: true
       is_sensitive: false
   - file_type: 
     opts:
       title: Test Class File Type
-      summary: '.swift' or '.m'
+      summary: .swift or .m
       description: The Test Class Type
       is_required: true
       is_sensitive: false
