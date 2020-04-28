@@ -10,7 +10,7 @@ const TEST_PLANS = [];
 const xcode = require('xcode'),
     fs = require('fs'),
     uuid = require('uuid'),
-    projectPath = XCODE_PROJECT + '/project_orig.pbxproj',
+    projectPath = XCODE_PROJECT + '/project.pbxproj',
     outputProjectPath = XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
 
