@@ -76,7 +76,7 @@ function addTestPlanToXCodeScheme(scheme, testPlans){
         }
         var stringified = JSON.stringify(json);
         var xml = parser.toXml(stringified);
-        fs.writeFile('new_scheme.xml', xml, function(err, data) {
+        fs.writeFile(scheme, xml, function(err, data) {
             if (err) {
                 console.log(err);
             }
