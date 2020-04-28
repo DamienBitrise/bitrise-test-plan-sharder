@@ -1,9 +1,9 @@
 title: "Shard Test Target into Test Plans"
 summary: "Shard Test Target into Test Plans"
 description: "Shard Test Target into Test Plans"
-website: https://github.com/DamienBitrise/bitrise-test-plan-sharder
-source_code_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder
-support_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder/issues
+website: https://github.com/bitrise-steplib/bitrise-step-build-router-wait
+source_code_url: https://github.com/bitrise-steplib/bitrise-step-build-router-wait
+support_url: https://github.com/bitrise-steplib/bitrise-step-build-router-wait/issues
 host_os_tags:
   - osx-10.10
   - ubuntu-16.04
