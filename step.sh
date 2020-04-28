@@ -17,6 +17,6 @@ npm i uuid
 echo '$' "node "$THIS_SCRIPT_DIR/index.js""
 node "$THIS_SCRIPT_DIR/index.js"
 
-envman add --key TEST_PLANS --value $test_plans
+envman add --key TEST_PLANS --value "$test_plans"
 
 cd $TMP_CURRENT_DIR
