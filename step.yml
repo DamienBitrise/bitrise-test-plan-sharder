@@ -14,11 +14,18 @@ is_always_run: false
 is_skippable: false
 
 inputs:
+  - source_dir: $BITRISE_SOURCE_DIR
+    opts:
+      title: Source Dir
+      summary: Location of your XCode Project
+      description: This is the location and name of your xcode project
+      is_required: true
+      is_sensitive: false
   - xcode_project:
     opts:
       title: XCode Project
-      summary: Location of your XCode Project
-      description: This is the location and name of your xcode project
+      summary: XCode Project name
+      description: This is the name of your xcode project
       is_required: true
       is_sensitive: false
   - target:
