@@ -4,6 +4,11 @@ const SHARDS = process.env.shards;//2
 const TARGET = process.env.target;//'NotesUITests';
 const TYPE = process.env.type;//'.swift';
 
+console.log('XCODE_PROJECT:',XCODE_PROJECT)
+console.log('TARGET:',TARGET)
+console.log('SHARDS:',SHARDS)
+console.log('TYPE:',TYPE)
+
 // Outputs
 const TEST_PLANS = [];
 
