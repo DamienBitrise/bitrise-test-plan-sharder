@@ -1,14 +1,17 @@
-title: "Shard Test Target into Test Plans"
-summary: "Shard Test Target into Test Plans"
-description: "Shard Test Target into Test Plans"
-website: https://github.com/bitrise-steplib/bitrise-step-build-router-wait
-source_code_url: https://github.com/bitrise-steplib/bitrise-step-build-router-wait
-support_url: https://github.com/bitrise-steplib/bitrise-step-build-router-wait/issues
+title: "Shard XCode Test Target"
+summary: "Shard XCode Test Target into multiple equal sized XCode Test Plans"
+description: "Shard XCode Test Target into multiple equal sized XCode Test Plans"
+website: https://github.com/DamienBitrise/bitrise-test-plan-sharder
+source_code_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder
+support_url: https://github.com/DamienBitrise/bitrise-test-plan-sharder/issues
 host_os_tags:
   - osx-10.10
   - ubuntu-16.04
 type_tags:
-  - utility
+  - test
+  
+project_type_tags:
+  - ios
 
 is_always_run: false
 is_skippable: false
