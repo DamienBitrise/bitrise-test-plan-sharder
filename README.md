@@ -1,7 +1,4 @@
-
-# bitrise-test-plan-sharder
-
-Bitrise Test Plan Sharder step
+# Bitrise Test Plan Sharder step
 
 This step can be used to automatically create equal sized XCode Test Plans from a XCode Test Target.
 
