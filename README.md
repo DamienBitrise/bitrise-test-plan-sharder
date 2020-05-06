@@ -10,7 +10,13 @@ These Test Plans can then be run in parallel in fan out builds.
 
 - NodeJS - https://nodejs.org/en/download/
 
-Run `node -v` to verify NodeJS Installation. You should see something like `v12.13.0` when it is installed depedning on the version.
+To verify your NodeJS Installation run:
+
+`node -v`
+
+You should see something like this printed if it was successful:
+
+ `v12.13.0`
 
 ## Run Step Locally
 
@@ -29,7 +35,9 @@ export TYPE=".swift"
 
 ### Running
 
-In the root of the this repo run `node index.js` to run the test sharder.
+From the folder you downloaded this code open the terminal and run:
+
+`node index.js` 
 
 **Note:** This will modify your XCode Project & XCode Scheme to add the newly created Test Plans.
 
