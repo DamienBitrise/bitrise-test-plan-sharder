@@ -22,7 +22,7 @@ You should see something like this printed if it was successful:
 
 To run this step locally you will need to set the inputs using Enviroment Variables
 
-### Enviroment Variables
+**Enviroment Variables**
 
 ```
 export SOURCE_DIR="/User/var/git/ios"
@@ -33,7 +33,7 @@ export SCHEME="NotesUITests"
 export TYPE=".swift"
 ```
 
-### Running
+**Running**
 
 From the folder you downloaded this code open the terminal and run:
 
@@ -43,34 +43,33 @@ From the folder you downloaded this code open the terminal and run:
 
 ## Input variables
 
-### Source Dir. (required)
+**Source Dir** (required)
   * **Description:** This is the location and name of your xcode project
   * **Example:** `$BITRISE_SOURCE_DIR/ios`
 
 
-### XCode Project (required)
+**XCode Project** (required)
   * **Description:** XCode Project name
   * **Example:** `Notes.xcodeproj`
 
-### XCode Target (required)
+**XCode Target** (required)
   * **Description:** The XCode Target to create Test Plans from
   * **Example:** `NotesUITests`
 
-### XCode Scheme (required)
+**XCode Scheme** (required)
   * **Description:** The XCode Scheme to test
   * **Example:** `Notes`
 
-### How many Test Plans to create (required)
+**How many Test Plans to create (required)**
   * **Description:** The number of Test Plans to generate
   * **Example:** `2`
 
-### Test Class File Type (required)
+**Test Class File Type (required)**
   * **Description:** .swift or .m
   * **Example:** `.swift`
 
-
 ## Outputs
 
-### TEST_PLANS
+**TEST_PLANS**
   * **Description:** List of Test Plans Created
   * **Example:** `"TestShard_1.xctestplan","TestShard_2.xctestplan"`
