@@ -36,8 +36,14 @@ myProj.parse(function (err) {
     const group = myProj.getPBXGroupByKey(main_group_uuid);
     const target = group.children.find((child) => child.comment == TARGET);
     const target_uuid = target.value;
-
-    const tests = myProj.getPBXGroupByKey(target_uuid).children.filter((test) => test.comment.indexOf(TYPE) != -1);
+    console.log('Target UUID:',target_uuid);
+    
+    const target_children = myProj.getPBXGroupByKey(target_uuid).children;
+    console.log('Target Children:',target_children.length);
+    
+    const tests = target_children.filter((test) => test.comment.indexOf(TYPE) != -1);
+    console.log('Tests:',tests.length);
+    
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
     console.log('Processing ' + shards.length + ' shards');
