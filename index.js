@@ -40,16 +40,19 @@ myProj.parse(function (err) {
     const tests = myProj.getPBXGroupByKey(target_uuid).children.filter((test) => test.comment.indexOf(TYPE) != -1);
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
+    console.log('Processing ' + shards.length + ' shards');
     shards.forEach((shard, index) => {
         let shardName = 'TestShard_'+index+'.xctestplan';
         TEST_PLANS.push(shardName);
 
         myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
+        console.log('Writing Test Plan to file');
         fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index));
     })
-
+    console.log('Updating scheme');
     addTestPlanToXCodeScheme(SOURCE_DIR + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme', TEST_PLANS);
-
+    
+    console.log('Writing xcode project');
     fs.writeFileSync(outputProjectPath, myProj.writeSync());
     let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
     console.log(SHARDS+' Test Plans Created:', quotedAndCommaSeparated);
@@ -73,12 +76,16 @@ function addTestPlanToXCodeScheme(scheme, testPlans){
             testPlans.forEach((testPlan) => {
                 json.Scheme.TestAction.TestPlans.TestPlanReference.push({ reference: 'container:'+testPlan, '$t': '' })
             })
+        } else {
+            console.log('Error: json.Scheme && json.Scheme.TestAction not found');   
         }
         var stringified = JSON.stringify(json);
         var xml = parser.toXml(stringified);
         fs.writeFile(scheme, xml, function(err, data) {
             if (err) {
                 console.log(err);
+            } else {
+                console.log('Writing XCode Project: ');   
             }
         });
     });
