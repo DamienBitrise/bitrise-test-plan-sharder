@@ -24,6 +24,21 @@ const xcode = require('xcode'),
     outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
 
+function getRecursiveTests(myProj, target_uuid, tests = []){
+    const target = myProj.getPBXGroupByKey(target_uuid);
+    if(target && target.children && target.children.length > 0){
+        target.children.forEach((test) => {
+            if(test && test.comment && test.comment.indexOf(TYPE) != -1){
+                tests.push(test);
+            } else {
+                return getRecursiveTests(myProj, test.value, tests)
+            }
+        })
+        return tests;
+    } else {
+        return tests;
+    }
+}
 
 // parsing is async, in a different process
 myProj.parse(function (err) {
@@ -37,15 +52,16 @@ myProj.parse(function (err) {
     const target = group.children.find((child) => child.comment == TARGET);
     const target_uuid = target.value;
     console.log('Target UUID:',target_uuid);
-    
-    const target_children = myProj.getPBXGroupByKey(target_uuid).children;
-    console.log('Target Children:',target_children.length);
-    
-    const tests = target_children.filter((test) => test.comment.indexOf(TYPE) != -1);
-    console.log('Tests:',tests.length);
+
+    const tests = getRecursiveTests(myProj, target_uuid);
+    console.log('Tests Found in Target:',tests.length);
     
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
+    if(shards.length == 0){
+        console.log('Error no tests found in Target');
+        return;
+    }
     console.log('Processing ' + shards.length + ' shards');
     shards.forEach((shard, index) => {
         let shardName = 'TestShard_'+index+'.xctestplan';
