@@ -19,7 +19,7 @@ const TEST_PLANS = [];
 const xcode = require('xcode'),
     fs = require('fs'),
     uuid = require('uuid'),
-    parser = require('xml2json');
+    parser = require('xml2json'),
     projectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
@@ -87,7 +87,9 @@ function addTestPlanToXCodeScheme(scheme, testPlans){
             console.error(err);
             return; 
         }
-        var json = JSON.parse(parser.toJson(data, {reversible: true}));
+        // Handle &quot; in xml
+        let unescapedData = data.toString().replace(/&quot;/g, '~');
+        var json = JSON.parse(parser.toJson(unescapedData, {reversible: true}));
 
         if(json.Scheme && json.Scheme.TestAction){
             if(!json.Scheme.TestAction.TestPlans){
@@ -102,7 +104,9 @@ function addTestPlanToXCodeScheme(scheme, testPlans){
             console.log('Error: json.Scheme && json.Scheme.TestAction not found');   
         }
         var stringified = JSON.stringify(json);
-        var xml = parser.toXml(stringified);
+        // Handle &quot; in xml
+        let reescapedData = stringified.replace(/~/g, '&quot;')
+        var xml = parser.toXml(reescapedData);
         fs.writeFile(scheme, xml, function(err, data) {
             if (err) {
                 console.log(err);
