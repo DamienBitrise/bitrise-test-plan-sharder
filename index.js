@@ -4,14 +4,14 @@ const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
-const TYPE = process.env.file_type;
+const DEBUG = process.env.debug_mode;
 
 console.log('SOURCE_DIR:',SOURCE_DIR)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
 console.log('SCHEME:',SCHEME)
 console.log('SHARDS:',SHARDS)
-console.log('TYPE:',TYPE)
+console.log('DEBUG:',DEBUG)
 
 // Outputs
 const TEST_PLANS = [];
@@ -24,11 +24,16 @@ const xcode = require('xcode'),
     outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
 
+function log(msg, obj){
+    if(DEBUG){
+        console.log(msg, obj ? obj : '');
+    }
+}
 function getRecursiveTests(myProj, target_uuid, tests = []){
     const target = myProj.getPBXGroupByKey(target_uuid);
     if(target && target.children && target.children.length > 0){
         target.children.forEach((test) => {
-            if(test && test.comment && test.comment.indexOf(TYPE) != -1){
+            if(test && test.comment && (test.comment.indexOf('.swift') != -1 || test.comment.indexOf('.m') != -1)){
                 tests.push(test);
             } else {
                 return getRecursiveTests(myProj, test.value, tests)
@@ -40,7 +45,6 @@ function getRecursiveTests(myProj, target_uuid, tests = []){
     }
 }
 
-// parsing is async, in a different process
 myProj.parse(function (err) {
     if (err) {
         console.error('Error:', err);
@@ -49,75 +53,165 @@ myProj.parse(function (err) {
     const project = myProj.getFirstProject();
     const main_group_uuid = project.firstProject.mainGroup;
     const group = myProj.getPBXGroupByKey(main_group_uuid);
+    log('Target children: ', group.children)
     const target = group.children.find((child) => child.comment == TARGET);
     const target_uuid = target.value;
-    console.log('Target UUID:',target_uuid);
 
-    const tests = getRecursiveTests(myProj, target_uuid);
-    console.log('Tests Found in Target:',tests.length);
+    const tests = getRecursiveTests(myProj, target_uuid, []);
+    log('Tests Found in Target:',tests.length);
     
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
     if(shards.length == 0){
-        console.log('Error no tests found in Target');
+        console.error('Error no tests found in Target');
         return;
     }
-    console.log('Processing ' + shards.length + ' shards');
-    shards.forEach((shard, index) => {
-        let shardName = 'TestShard_'+index+'.xctestplan';
-        TEST_PLANS.push(shardName);
+    log('\nCreating ' + shards.length + ' Test Plan shards');
 
-        myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
-        console.log('Writing Test Plan to file');
-        fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index));
-    })
-    console.log('Updating scheme');
-    addTestPlanToXCodeScheme(SOURCE_DIR + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme', TEST_PLANS);
-    
-    console.log('Writing xcode project');
-    fs.writeFileSync(outputProjectPath, myProj.writeSync());
-    let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
-    console.log(SHARDS+' Test Plans Created:', quotedAndCommaSeparated);
-    process.env.test_plans = quotedAndCommaSeparated;
-});
-
-function addTestPlanToXCodeScheme(scheme, testPlans){
-    fs.readFile( scheme, function(err, data) {
+    let schemePath = SOURCE_DIR + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme';
+    fs.readFile( schemePath, function(err, schemeData) {
         if (err) {
-            console.error(err);
+            console.error('Error reading scheme:',err);
             return; 
         }
-        // Handle &quot; in xml
-        let unescapedData = data.toString().replace(/&quot;/g, '~');
-        var json = JSON.parse(parser.toJson(unescapedData, {reversible: true}));
 
-        if(json.Scheme && json.Scheme.TestAction){
-            if(!json.Scheme.TestAction.TestPlans){
-                json.Scheme.TestAction.TestPlans = {
-                    TestPlanReference: []
-                }
-            }
-            testPlans.forEach((testPlan) => {
-                json.Scheme.TestAction.TestPlans.TestPlanReference.push({ reference: 'container:'+testPlan, '$t': '' })
-            })
-        } else {
-            console.log('Error: json.Scheme && json.Scheme.TestAction not found');   
-        }
-        var stringified = JSON.stringify(json);
         // Handle &quot; in xml
-        let reescapedData = stringified.replace(/~/g, '&quot;')
-        var xml = parser.toXml(reescapedData);
-        fs.writeFile(scheme, xml, function(err, data) {
+        let unescapedData = schemeData.toString().replace(/&quot;/g, '~');
+
+        // Parse XML to JSON
+        let jsonStr = parser.toJson(unescapedData, {reversible: true})
+        let schemeJson = JSON.parse(jsonStr);
+
+        // Get the Scheme default options
+        let defaultOptions = getDefaulOptions(schemeJson);
+
+        // Create Test Plans
+        shards.forEach((shard, index) => {
+            let shardName = 'TestShard_'+index+'.xctestplan';
+            TEST_PLANS.push(shardName);
+
+            log('\nAdding test plan to XCode Project\'s Resources');
+            myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
+
+            log('Writing Test Plan to file');
+            fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
+
+            console.log('Test Plan Shard '+index+' Created:', SOURCE_DIR+shardName);
+        })
+        log('\nAdding Test Plans to XCode scheme');
+
+        // Add Test Plans to scheme
+        let schemeWithTestPlansJson = addTestPlanToXCodeScheme(schemeJson, TEST_PLANS);
+
+        // Handle &quot; in xml
+        let reescapedData = JSON.stringify(schemeWithTestPlansJson).replace(/~/g, '&quot;')
+
+        let xml = parser.toXml(reescapedData);
+        fs.writeFile(schemePath, xml, function(err, data) {
             if (err) {
-                console.log(err);
+                console.error(err);
             } else {
-                console.log('Writing XCode Project: ');   
+                console.log('XCode scheme updated');   
+                fs.writeFileSync(outputProjectPath, myProj.writeSync());
+                console.log('XCode project updated');
             }
         });
     });
+    let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
+    // TODO Use Envman to save these globally
+    process.env.test_plans = quotedAndCommaSeparated;
+});
+
+function getDefaulOptions(schemeJson){
+    let environmentVariableEntries = [];
+    let commandLineArgumentEntries = [];
+    let undefinedBehaviorSanitizerEnabled = null;
+    let targetForVariableExpansion = null;
+
+    if(schemeJson.Scheme && schemeJson.Scheme.LaunchAction){
+        let launchAction = schemeJson.Scheme.LaunchAction;
+        // CommandLineArguments
+        if(launchAction.CommandLineArguments){
+            let cmgArgs = launchAction.CommandLineArguments.CommandLineArgument;
+            if(cmgArgs instanceof Array){
+                cmgArgs.forEach((cmdArg) => {
+                    commandLineArgumentEntries.push({
+                        argument: cmdArg.argument,
+                        enabled: cmdArg.isEnabled == 'YES' ? true : false
+                    });
+                })
+            } else { // Single Element
+                commandLineArgumentEntries.push({
+                    argument: cmgArgs.argument,
+                    enabled: cmgArgs.isEnabled == 'YES' ? true : false
+                });
+            }
+        }
+        // EnvironmentVariables
+        if(launchAction.EnvironmentVariables){
+            let envVars = launchAction.EnvironmentVariables.EnvironmentVariable;
+            if(envVars instanceof Array){
+                envVars.forEach((envVar) => {
+                    environmentVariableEntries.push({
+                        key: envVar.key,
+                        value: envVar.value,
+                        enabled: envVar.isEnabled == 'YES' ? true : false
+                    });
+                })
+            } else { // Single Element
+                environmentVariableEntries.push({
+                    key: envVars.key,
+                    value: envVars.value,
+                    enabled: envVars.isEnabled == 'YES' ? true : false
+                });
+            }
+        }
+        // targetForVariableExpansion
+        if(launchAction.MacroExpansion && launchAction.MacroExpansion.BuildableReference){
+            let ref = launchAction.MacroExpansion.BuildableReference;
+            targetForVariableExpansion = {
+                containerPath: ref.ReferencedContainer,
+                identifier: ref.BlueprintIdentifier,
+                name: ref.BlueprintName
+            };
+        }
+        // undefinedBehaviorSanitizerEnabled
+        if(launchAction.enableUBSanitizer != null){
+            undefinedBehaviorSanitizerEnabled = launchAction.enableUBSanitizer == 'YES' ? true : false;
+        }
+        
+    }
+    let defaultOpts = {};
+    if(commandLineArgumentEntries.length > 0){
+        defaultOpts.commandLineArgumentEntries = commandLineArgumentEntries;
+    }
+    if(environmentVariableEntries.length > 0){
+        defaultOpts.environmentVariableEntries = environmentVariableEntries;
+    }
+    if(targetForVariableExpansion != null){
+        defaultOpts.targetForVariableExpansion = targetForVariableExpansion;
+    }
+    if(undefinedBehaviorSanitizerEnabled != null){
+        defaultOpts.undefinedBehaviorSanitizerEnabled = undefinedBehaviorSanitizerEnabled;
+    }
+    return defaultOpts;
 }
 
-function createTestPlan(target_uuid, shards, shardIndex){
+function addTestPlanToXCodeScheme(schemeJson, testPlans){
+    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
+        schemeJson.Scheme.TestAction.TestPlans = {
+            TestPlanReference: []
+        };
+        testPlans.forEach((testPlan) => {
+            schemeJson.Scheme.TestAction.TestPlans.TestPlanReference.push({ reference: 'container:'+testPlan, '$t': '' })
+        });
+    } else {
+        console.log('Error: json.Scheme && json.Scheme.TestAction not found');   
+    }
+    return schemeJson;
+}
+
+function createTestPlan(target_uuid, shards, shardIndex, defaultOptions){
     let skipTests = shards.filter((shard, index) => index != shardIndex);
     let skipTestNames = [];
     skipTests.forEach((skipTest) => {
@@ -129,14 +223,10 @@ function createTestPlan(target_uuid, shards, shardIndex){
             {
                 "id" : (''+uuid.v4()).toUpperCase(),
                 "name" : "Configuration 1",
-                "options" : {
-            
-                }
+                "options" : {}
             }
         ],
-        "defaultOptions" : {
-            "codeCoverage" : false
-        },
+        "defaultOptions" : defaultOptions,
         "testTargets" : [
           {
             "skippedTests" : skipTestNames,
@@ -153,8 +243,8 @@ function createTestPlan(target_uuid, shards, shardIndex){
 }
 
 function shard(arr, howMany) {
-    var newArr = []; start = 0; end = howMany;
-    for(var i=1; i<= Math.ceil(arr.length / howMany); i++) {
+    let newArr = []; start = 0; end = howMany;
+    for(let i=1; i<= Math.ceil(arr.length / howMany); i++) {
         newArr.push(arr.slice(start, end));
         start = start + howMany;
         end = end + howMany

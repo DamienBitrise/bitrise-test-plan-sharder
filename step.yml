@@ -46,10 +46,9 @@ description: |-
 
   ## Input variables
 
-  **Source Dir** (required)
-    * **Description:** This is the location and name of your xcode project
+  **Path to XCode Project** (required)
+    * **Description:** This is the location of your xcode project
     * **Example:** `$BITRISE_SOURCE_DIR/ios`
-
 
   **XCode Project** (required)
     * **Description:** XCode Project name
@@ -67,9 +66,9 @@ description: |-
     * **Description:** The number of Test Plans to generate
     * **Example:** `2`
 
-  **Test Class File Type (required)**
-    * **Description:** .swift or .m
-    * **Example:** `.swift`
+  **Debug**
+    * **Description:** Create verbose debug logs
+    * **Example:** YES / NO
 
   ## Outputs
 
@@ -93,9 +92,9 @@ is_always_run: false
 is_skippable: false
 
 inputs:
-  - source_dir: $BITRISE_SOURCE_DIR
+  - path_to_xcode: $BITRISE_SOURCE_DIR
     opts:
-      title: Source Dir
+      title: Path to xcode project no trailing slash
       summary: Location of your XCode Project
       description: This is the location and name of your xcode project
       is_required: true
@@ -128,13 +127,16 @@ inputs:
       description: This will create Test Plans containing equal numbers of test cases
       is_required: true
       is_sensitive: false
-  - file_type: 
-    opts:
-      title: Test Class File Type
-      summary: .swift or .m
-      description: The Test Class Type
+  - debug_mode: "false"
+    opts: 
+      category: Debug
+      title: "Enable Debug Mode"
+      summary: The step will print more verbose logs if enabled.
+      description: The step will print more verbose logs if enabled.
       is_required: true
-      is_sensitive: false
+      value_options:
+        - "false"
+        - "true"
 outputs:
   - TEST_PLANS:
     opts:
