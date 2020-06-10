@@ -4,7 +4,7 @@ const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
-const DEBUG = process.env.debug_mode;
+const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
 console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
@@ -72,6 +72,7 @@ myProj.parse(function (err) {
     fs.readFile( schemePath, function(err, schemeData) {
         if (err) {
             console.error('Error reading scheme:',err);
+            process.exit();
             return; 
         }
 
@@ -110,6 +111,7 @@ myProj.parse(function (err) {
         fs.writeFile(schemePath, xml, function(err, data) {
             if (err) {
                 console.error(err);
+                process.exit();
             } else {
                 console.log('XCode scheme updated');   
                 fs.writeFileSync(outputProjectPath, myProj.writeSync());
