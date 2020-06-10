@@ -1,12 +1,12 @@
 // Inputs
-const SOURCE_DIR = process.env.source_dir + '/';
+const XCODE_PATH = process.env.path_to_xcode + '/';
 const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode;
 
-console.log('SOURCE_DIR:',SOURCE_DIR)
+console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
 console.log('SCHEME:',SCHEME)
@@ -20,8 +20,8 @@ const xcode = require('xcode'),
     fs = require('fs'),
     uuid = require('uuid'),
     parser = require('xml2json'),
-    projectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
-    outputProjectPath = SOURCE_DIR + XCODE_PROJECT + '/project.pbxproj',
+    projectPath = XCODE_PATH + XCODE_PROJECT + '/project.pbxproj',
+    outputProjectPath = XCODE_PATH + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
 
 function log(msg, obj){
@@ -68,7 +68,7 @@ myProj.parse(function (err) {
     }
     log('\nCreating ' + shards.length + ' Test Plan shards');
 
-    let schemePath = SOURCE_DIR + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme';
+    let schemePath = XCODE_PATH + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme';
     fs.readFile( schemePath, function(err, schemeData) {
         if (err) {
             console.error('Error reading scheme:',err);
@@ -94,9 +94,9 @@ myProj.parse(function (err) {
             myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
 
             log('Writing Test Plan to file');
-            fs.writeFileSync(SOURCE_DIR+shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
+            fs.writeFileSync(XCODE_PATH+shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
 
-            console.log('Test Plan Shard '+index+' Created:', SOURCE_DIR+shardName);
+            console.log('Test Plan Shard '+index+' Created:', XCODE_PATH+shardName);
         })
         log('\nAdding Test Plans to XCode scheme');
 
@@ -117,7 +117,7 @@ myProj.parse(function (err) {
             }
         });
     });
-    let quotedAndCommaSeparated = "\"" + SOURCE_DIR + TEST_PLANS.join("\",\""+SOURCE_DIR) + "\"";
+    let quotedAndCommaSeparated = "\"" + XCODE_PATH + TEST_PLANS.join("\",\""+XCODE_PATH) + "\"";
     // TODO Use Envman to save these globally
     process.env.test_plans = quotedAndCommaSeparated;
 });
