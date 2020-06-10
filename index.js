@@ -6,6 +6,7 @@ const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
+
 console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TARGET:',TARGET)
@@ -88,16 +89,16 @@ myProj.parse(function (err) {
 
         // Create Test Plans
         shards.forEach((shard, index) => {
-            let shardName = 'TestShard_'+index+'.xctestplan';
+            let shardName = XCODE_PATH+'TestShard_'+index+'.xctestplan';
             TEST_PLANS.push(shardName);
 
             log('\nAdding test plan to XCode Project\'s Resources');
             myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
 
             log('Writing Test Plan to file');
-            fs.writeFileSync(XCODE_PATH+shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
+            fs.writeFileSync(shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
 
-            console.log('Test Plan Shard '+index+' Created:', XCODE_PATH+shardName);
+            console.log('Test Plan Shard '+index+' Created:', shardName);
         })
         log('\nAdding Test Plans to XCode scheme');
 
