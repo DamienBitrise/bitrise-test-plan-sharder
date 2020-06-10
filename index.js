@@ -149,8 +149,8 @@ function getOtherTargets(schemeJson){
                         }
                     }
                     let testTarget = {
+                        parallelizable : testableReference.parallelizable == 'YES' ? true : false,
                         target : {
-                            parallelizable : testableReference.parallelizable == 'YES' ? true : false,
                             containerPath : buildableReference.ReferencedContainer,
                             identifier : buildableReference.BlueprintIdentifier,
                             name : buildableReference.BlueprintName
@@ -187,12 +187,12 @@ function getMainTarget(schemeJson, skippedShardTests){
                     }
                     let allSkippedTests = skippedTests.concat(skippedShardTests)
                     target = {
-                        "target" : {
                         "parallelizable" : testableReference.parallelizable == 'YES' ? true : false,
                         "skippedTests" : allSkippedTests,
-                        "containerPath" : buildableReference.ReferencedContainer,
-                        "identifier" : buildableReference.BlueprintIdentifier,
-                        "name" : buildableReference.BlueprintName
+                        "target" : {
+                            "containerPath" : buildableReference.ReferencedContainer,
+                            "identifier" : buildableReference.BlueprintIdentifier,
+                            "name" : buildableReference.BlueprintName
                         }
                     };
                 }
