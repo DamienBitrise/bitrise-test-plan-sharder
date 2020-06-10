@@ -6,14 +6,6 @@ const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
-
-console.log('XCODE_PATH:',XCODE_PATH)
-console.log('XCODE_PROJECT:',XCODE_PROJECT)
-console.log('TARGET:',TARGET)
-console.log('SCHEME:',SCHEME)
-console.log('SHARDS:',SHARDS)
-console.log('DEBUG:',DEBUG)
-
 // Outputs
 const TEST_PLANS = [];
 
@@ -74,7 +66,6 @@ myProj.parse(function (err) {
         if (err) {
             console.error('Error reading scheme:',err);
             process.exit();
-            return; 
         }
 
         // Handle &quot; in xml
@@ -87,18 +78,31 @@ myProj.parse(function (err) {
         // Get the Scheme default options
         let defaultOptions = getDefaulOptions(schemeJson);
 
+        let otherTargets = getOtherTargets(schemeJson);
+        const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
+        const otherTargetsShards = shard(otherTargets, target_shard_size);
+
         // Create Test Plans
-        shards.forEach((shard, index) => {
-            let shardName = XCODE_PATH+'TestShard_'+index+'.xctestplan';
+        shards.forEach((shard, shardIndex) => {
+            let shardName = XCODE_PATH+'TestShard_'+shardIndex+'.xctestplan';
             TEST_PLANS.push(shardName);
 
             log('\nAdding test plan to XCode Project\'s Resources');
             myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
 
-            log('Writing Test Plan to file');
-            fs.writeFileSync(shardName, createTestPlan(target_uuid, [].concat(shards), index, defaultOptions));
+            let skipTests = shards.filter((shard, index) => index != shardIndex);
+            let skipTestNames = [];
+            skipTests.forEach((skipTest) => {
+                let tests = skipTest.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
+                skipTestNames = skipTestNames.concat(tests);
+            });
 
-            console.log('Test Plan Shard '+index+' Created:', shardName);
+            let mainTarget = getMainTarget(schemeJson, skipTestNames);
+
+            log('Writing Test Plan to file');
+            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(otherTargetsShards[shardIndex])));
+
+            console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
         })
         log('\nAdding Test Plans to XCode scheme');
 
@@ -124,6 +128,83 @@ myProj.parse(function (err) {
     // TODO Use Envman to save these globally
     process.env.test_plans = quotedAndCommaSeparated;
 });
+
+function getOtherTargets(schemeJson){
+    let targets = [];
+    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
+        let testAction = schemeJson.Scheme.TestAction;
+        if(testAction.Testables){
+            testAction.Testables.TestableReference.forEach((testableReference) => {
+                let buildableReference = testableReference.BuildableReference;
+                if(testableReference.skipped == 'NO'  && buildableReference.BlueprintName != TARGET){
+                    let skippedTests = null;
+                    if(testableReference.SkippedTests){
+                        skippedTests = [];
+                        if(testableReference.SkippedTests.Test instanceof Array){
+                            testableReference.SkippedTests.Test.forEach((skippedTest) => {
+                                skippedTests.push(skippedTest.Identifier);
+                            })
+                        } else {
+                            skippedTests.push(testableReference.SkippedTests.Test.Identifier);
+                        }
+                    }
+                    let testTarget = {
+                        target : {
+                            parallelizable : testableReference.parallelizable == 'YES' ? true : false,
+                            containerPath : buildableReference.ReferencedContainer,
+                            identifier : buildableReference.BlueprintIdentifier,
+                            name : buildableReference.BlueprintName
+                        }
+                    };
+                    if(skippedTests != null){
+                        testTarget.skippedTests = skippedTests;
+                    }
+                    targets.push(testTarget);
+                }
+            })
+        }
+    }
+    return targets;
+}
+
+function getMainTarget(schemeJson, skippedShardTests){
+    let target = null;
+    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
+        let testAction = schemeJson.Scheme.TestAction;
+        if(testAction.Testables){
+            testAction.Testables.TestableReference.forEach((testableReference) => {
+                let buildableReference = testableReference.BuildableReference;
+                if(testableReference.skipped == 'NO' && buildableReference.BlueprintName == TARGET){
+                    let skippedTests = [];
+                    if(testableReference.SkippedTests){
+                        if(testableReference.SkippedTests.Test instanceof Array){
+                            testableReference.SkippedTests.Test.forEach((skippedTest) => {
+                                skippedTests.push(skippedTest.Identifier);
+                            })
+                        } else {
+                            skippedTests.push(testableReference.SkippedTests.Test.Identifier);
+                        }
+                    }
+                    let allSkippedTests = skippedTests.concat(skippedShardTests)
+                    target = {
+                        "target" : {
+                        "parallelizable" : testableReference.parallelizable == 'YES' ? true : false,
+                        "skippedTests" : allSkippedTests,
+                        "containerPath" : buildableReference.ReferencedContainer,
+                        "identifier" : buildableReference.BlueprintIdentifier,
+                        "name" : buildableReference.BlueprintName
+                        }
+                    };
+                }
+            })
+        }
+    }
+    if(target == null){
+        console.error('Error: unable to find main target:', TARGET);
+        process.exit();
+    }
+    return target;
+}
 
 function getDefaulOptions(schemeJson){
     let environmentVariableEntries = [];
@@ -218,18 +299,13 @@ function addTestPlanToXCodeScheme(schemeJson, testPlans){
             schemeJson.Scheme.TestAction.TestPlans.TestPlanReference.push({ reference: 'container:'+testPlan, '$t': '' })
         });
     } else {
-        console.log('Error: json.Scheme && json.Scheme.TestAction not found');   
+        console.error('Error: json.Scheme && json.Scheme.TestAction not found');
+        process.exit();
     }
     return schemeJson;
 }
 
-function createTestPlan(target_uuid, shards, shardIndex, defaultOptions){
-    let skipTests = shards.filter((shard, index) => index != shardIndex);
-    let skipTestNames = [];
-    skipTests.forEach((skipTest) => {
-        let tests = skipTest.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
-        skipTestNames = skipTestNames.concat(tests);
-    });
+function createTestPlan(defaultOptions, testTargets){
     let testPlan = {
         "configurations" : [
             {
@@ -239,16 +315,7 @@ function createTestPlan(target_uuid, shards, shardIndex, defaultOptions){
             }
         ],
         "defaultOptions" : defaultOptions,
-        "testTargets" : [
-          {
-            "skippedTests" : skipTestNames,
-            "target" : {
-              "containerPath" : "container:"+XCODE_PROJECT,
-              "identifier" : target_uuid,
-              "name" : TARGET
-            }
-          }
-        ],
+        "testTargets" : testTargets,
         "version" : 1
       }
     return JSON.stringify(testPlan);
