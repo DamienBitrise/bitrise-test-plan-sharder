@@ -129,7 +129,13 @@ function getDefaulOptions(schemeJson){
     let commandLineArgumentEntries = [];
     let undefinedBehaviorSanitizerEnabled = null;
     let targetForVariableExpansion = null;
-
+    let codeCoverage = false;
+    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
+        let testAction = schemeJson.Scheme.TestAction;
+        if(testAction.codeCoverageEnabled){
+            codeCoverage = true;
+        }
+    }
     if(schemeJson.Scheme && schemeJson.Scheme.LaunchAction){
         let launchAction = schemeJson.Scheme.LaunchAction;
         // CommandLineArguments
@@ -195,6 +201,9 @@ function getDefaulOptions(schemeJson){
     }
     if(undefinedBehaviorSanitizerEnabled != null){
         defaultOpts.undefinedBehaviorSanitizerEnabled = undefinedBehaviorSanitizerEnabled;
+    }
+    if(codeCoverage){
+        defaultOpts.codeCoverage = codeCoverage;
     }
     return defaultOpts;
 }
