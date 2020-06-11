@@ -118,7 +118,7 @@ myProj.parse(function (err) {
         let schemeWithTestPlansJson = addTestPlanToXCodeScheme(schemeJson, TEST_PLANS);
 
         // Handle &quot; in xml
-        let reescapedData = JSON.stringify(schemeWithTestPlansJson).replace(/~/g, '&quot;').replace(/\^/g, '&#xA;')
+        let reescapedData = JSON.stringify(schemeWithTestPlansJson).replace(/~/g, '&quot;').replace(/\^/g, '&#10;')
 
         let xml = parser.toXml(reescapedData);
         fs.writeFile(schemePath, xml, function(err, data) {
