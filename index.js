@@ -6,6 +6,13 @@ const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
+console.log('XCODE_PATH:',XCODE_PATH)
+console.log('XCODE_PROJECT:',XCODE_PROJECT)
+console.log('TARGET:',TARGET)
+console.log('SCHEME:',SCHEME)
+console.log('SHARDS:',SHARDS)
+console.log('DEBUG:',DEBUG)
+
 // Outputs
 const TEST_PLANS = [];
 
@@ -244,14 +251,14 @@ function getDefaulOptions(schemeJson){
                 envVars.forEach((envVar) => {
                     environmentVariableEntries.push({
                         key: envVar.key,
-                        value: envVar.value,
+                        value: envVar.value.replace(/\//g, "~"),
                         enabled: envVar.isEnabled == 'YES' ? true : false
                     });
                 })
             } else { // Single Element
                 environmentVariableEntries.push({
                     key: envVars.key,
-                    value: envVars.value,
+                    value: envVars.value.replace(/\//g, "~"),
                     enabled: envVars.isEnabled == 'YES' ? true : false
                 });
             }
@@ -318,7 +325,7 @@ function createTestPlan(defaultOptions, testTargets){
         "testTargets" : testTargets,
         "version" : 1
       }
-    return JSON.stringify(testPlan);
+    return JSON.stringify(testPlan).replace(/~/g, '\\/');
 }
 
 function shard(arr, howMany) {
