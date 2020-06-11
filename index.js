@@ -76,7 +76,7 @@ myProj.parse(function (err) {
         }
 
         // Handle &quot; in xml
-        let unescapedData = schemeData.toString().replace(/&quot;/g, '~').replace(/&#xA;/g, '^');
+        let unescapedData = schemeData.toString().replace(/&quot;/g, '~').replace(/&#10;/g, '^');
 
         // Parse XML to JSON
         let jsonStr = parser.toJson(unescapedData, {reversible: true})
