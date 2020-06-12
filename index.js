@@ -157,8 +157,9 @@ function addTestPlans(main_group_uuid, shards){
 
             let mainTarget = getMainTarget(schemeJson, skipTestNames);
 
+            let otherTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
             log('Writing Test Plan to file');
-            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(otherTargetsShards[shardIndex])));
+            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(otherTargets)));
 
             console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
         })
