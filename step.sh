@@ -7,7 +7,7 @@ THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $THIS_SCRIPT_DIR
 
 echo '$' "npm i xcode"
-npm i xcode
+npm i https://github.com/apache/cordova-node-xcode
 
 echo '$' "npm i uuid"
 npm i uuid
