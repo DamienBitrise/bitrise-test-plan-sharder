@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "xcode": "^3.0.0",
+    "xcode": "git+https://github.com/apache/cordova-node-xcode.git",
     "xml2json": "^0.12.0"
   }
 }
