@@ -1,19 +1,11 @@
 // Inputs
-// const XCODE_PATH = process.env.path_to_xcode + '/';
-// const XCODE_PROJECT = process.env.xcode_project;
-// const SHARDS = process.env.shards;
-// const TEST_PLAN = process.env.test_plan;
-// const TARGET = process.env.target;
-// const SCHEME = process.env.scheme;
-// const DEBUG = process.env.debug_mode == 'true' ? true : false;
-
-const XCODE_PATH = '/Users/damien_bitrise/git/bitrise-test-plan-sharder' + '/';
-const XCODE_PROJECT = 'Tinder.xcodeproj';
-const SHARDS = 2;
-const TEST_PLAN = '';
-const TARGET = 'Tinder Tests';
-const SCHEME = 'Tinder CI';
-const DEBUG = false;
+const XCODE_PATH = process.env.path_to_xcode + '/';
+const XCODE_PROJECT = process.env.xcode_project;
+const SHARDS = process.env.shards;
+const TEST_PLAN = process.env.test_plan;
+const TARGET = process.env.target;
+const SCHEME = process.env.scheme;
+const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
 console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
