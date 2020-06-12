@@ -2,6 +2,7 @@
 const XCODE_PATH = process.env.path_to_xcode + '/';
 const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
+const TEST_PLAN = process.env.type == 'Target' ? true : false;
 const TARGET = process.env.target;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
@@ -29,6 +30,7 @@ function log(msg, obj){
         console.log(msg, obj ? obj : '');
     }
 }
+
 function getRecursiveTests(myProj, target_uuid, tests = []){
     const target = myProj.getPBXGroupByKey(target_uuid);
     if(target && target.children && target.children.length > 0){
@@ -159,7 +161,7 @@ function getOtherTargets(schemeJson){
                     let testTarget = {
                         parallelizable : testableReference.parallelizable == 'YES' ? true : false,
                         target : {
-                            containerPath : buildableReference.ReferencedContainer,
+                            containerPath : buildableReference.ReferencedContainer.replace(/\//g, "~"),
                             identifier : buildableReference.BlueprintIdentifier,
                             name : buildableReference.BlueprintName
                         }
@@ -198,7 +200,7 @@ function getMainTarget(schemeJson, skippedShardTests){
                         "parallelizable" : testableReference.parallelizable == 'YES' ? true : false,
                         "skippedTests" : allSkippedTests,
                         "target" : {
-                            "containerPath" : buildableReference.ReferencedContainer,
+                            "containerPath" : buildableReference.ReferencedContainer.replace(/\//g, "~"),
                             "identifier" : buildableReference.BlueprintIdentifier,
                             "name" : buildableReference.BlueprintName
                         }
