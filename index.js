@@ -1,14 +1,23 @@
 // Inputs
-const XCODE_PATH = process.env.path_to_xcode + '/';
-const XCODE_PROJECT = process.env.xcode_project;
-const SHARDS = process.env.shards;
-const TEST_PLAN = process.env.type == 'Target' ? true : false;
-const TARGET = process.env.target;
-const SCHEME = process.env.scheme;
-const DEBUG = process.env.debug_mode == 'true' ? true : false;
+// const XCODE_PATH = process.env.path_to_xcode + '/';
+// const XCODE_PROJECT = process.env.xcode_project;
+// const SHARDS = process.env.shards;
+// const TEST_PLAN = process.env.test_plan;
+// const TARGET = process.env.target;
+// const SCHEME = process.env.scheme;
+// const DEBUG = process.env.debug_mode == 'true' ? true : false;
+
+const XCODE_PATH = '/Users/damien_bitrise/git/bitrise-test-plan-sharder' + '/';
+const XCODE_PROJECT = 'Tinder.xcodeproj';
+const SHARDS = 2;
+const TEST_PLAN = '';
+const TARGET = 'Tinder Tests';
+const SCHEME = 'Tinder CI';
+const DEBUG = false;
 
 console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
+console.log('TEST_PLAN:',TEST_PLAN)
 console.log('TARGET:',TARGET)
 console.log('SCHEME:',SCHEME)
 console.log('SHARDS:',SHARDS)
@@ -24,28 +33,6 @@ const xcode = require('xcode'),
     projectPath = XCODE_PATH + XCODE_PROJECT + '/project.pbxproj',
     outputProjectPath = XCODE_PATH + XCODE_PROJECT + '/project.pbxproj',
     myProj = xcode.project(projectPath);
-
-function log(msg, obj){
-    if(DEBUG){
-        console.log(msg, obj ? obj : '');
-    }
-}
-
-function getRecursiveTests(myProj, target_uuid, tests = []){
-    const target = myProj.getPBXGroupByKey(target_uuid);
-    if(target && target.children && target.children.length > 0){
-        target.children.forEach((test) => {
-            if(test && test.comment && (test.comment.indexOf('.swift') != -1 || test.comment.indexOf('.m') != -1)){
-                tests.push(test);
-            } else {
-                return getRecursiveTests(myProj, test.value, tests)
-            }
-        })
-        return tests;
-    } else {
-        return tests;
-    }
-}
 
 myProj.parse(function (err) {
     if (err) {
@@ -70,6 +57,74 @@ myProj.parse(function (err) {
     }
     log('\nCreating ' + shards.length + ' Test Plan shards');
 
+    if(TEST_PLAN == ''){
+        addTestPlans(main_group_uuid, shards);
+    } else {
+        updateTestPlan(shards);
+    }
+    
+    let quotedAndCommaSeparated = "\"" + XCODE_PATH + TEST_PLANS.join("\",\""+XCODE_PATH) + "\"";
+    // TODO Use Envman to save these globally
+    process.env.test_plans = quotedAndCommaSeparated;
+});
+
+// Update existing test plan
+function updateTestPlan(shards){
+    let testPlanPath = XCODE_PATH + '/' + TEST_PLAN;
+    fs.readFile( testPlanPath, function(err, testPlanData) {
+        if (err) {
+            console.error('Error reading test plan:',err);
+            process.exit();
+        }
+        let jsonString = testPlanData.toString();
+        let testPlanJson = JSON.parse(jsonString.replace(/\\\//g, "~"));
+        let otherTargets = testPlanJson.testTargets.filter((target) => target.name != TARGET)
+
+        const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
+        const otherTargetsShards = shard(otherTargets, target_shard_size);
+
+        // Create Test Plans
+        shards.forEach((shard, shardIndex) => {
+            let shardName = XCODE_PATH+'TestShard_'+shardIndex+'.xctestplan';
+            TEST_PLANS.push(shardName);
+
+            let skipTests = shards.filter((shard, index) => index != shardIndex);
+            let skipTestNames = [];
+            skipTests.forEach((skipTest) => {
+                let tests = skipTest.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
+                skipTestNames = skipTestNames.concat(tests);
+            });
+
+            let mainTarget = getMainTargetFromTestPlan(testPlanJson, skipTestNames);
+
+            log('Writing Test Plan to file');
+
+            let testPlan = createTestPlan(testPlanJson.defaultOptions, [mainTarget].concat(otherTargetsShards[shardIndex]));
+
+            fs.writeFileSync(shardName, testPlan);
+
+            console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
+        })
+    });
+}
+
+function getMainTargetFromTestPlan(testPlanJson, skippedShardTests){
+    let mainTarget = null;
+    testPlanJson.testTargets.forEach((testTarget) => {
+        if(testTarget.target.name == TARGET){
+            mainTarget = JSON.parse(JSON.stringify(testTarget));
+            mainTarget.skippedTests = mainTarget.skippedTests.concat(skippedShardTests);
+        }
+    });
+    if(mainTarget == null){
+        console.error('Error cannot find Test Target');
+        process.exit();
+    }
+    return mainTarget;
+}
+
+// Create and add test plans to project
+function addTestPlans(main_group_uuid, shards){
     let schemePath = XCODE_PATH + XCODE_PROJECT + '/xcshareddata/xcschemes/' + SCHEME + '.xcscheme';
     fs.readFile( schemePath, function(err, schemeData) {
         if (err) {
@@ -97,6 +152,7 @@ myProj.parse(function (err) {
             TEST_PLANS.push(shardName);
 
             log('\nAdding test plan to XCode Project\'s Resources');
+            myProj.addPbxGroup([], 'Resources', 'Resources', '"<group>"');
             myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
 
             let skipTests = shards.filter((shard, index) => index != shardIndex);
@@ -133,10 +189,7 @@ myProj.parse(function (err) {
             }
         });
     });
-    let quotedAndCommaSeparated = "\"" + XCODE_PATH + TEST_PLANS.join("\",\""+XCODE_PATH) + "\"";
-    // TODO Use Envman to save these globally
-    process.env.test_plans = quotedAndCommaSeparated;
-});
+}
 
 function getOtherTargets(schemeJson){
     let targets = [];
@@ -338,4 +391,26 @@ function shard(arr, howMany) {
         end = end + howMany
     }
     return newArr;
+}
+
+function log(msg, obj){
+    if(DEBUG){
+        console.log(msg, obj ? obj : '');
+    }
+}
+
+function getRecursiveTests(myProj, target_uuid, tests = []){
+    const target = myProj.getPBXGroupByKey(target_uuid);
+    if(target && target.children && target.children.length > 0){
+        target.children.forEach((test) => {
+            if(test && test.comment && (test.comment.indexOf('.swift') != -1 || test.comment.indexOf('.m') != -1)){
+                tests.push(test);
+            } else {
+                return getRecursiveTests(myProj, test.value, tests)
+            }
+        })
+        return tests;
+    } else {
+        return tests;
+    }
 }

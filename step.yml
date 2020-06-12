@@ -108,10 +108,17 @@ inputs:
       is_sensitive: false
   - target:
     opts:
-      title: XCode Target
-      summary: The XCode Target to create Test Plans from
-      description: The XCode Target will be used to create Test Plans
+      title: XCode Target or Test Plan name
+      summary: The XCode Target or Test Plans to shard
+      description: The XCode Target or Test Plan will be used to create shards
       is_required: true
+      is_sensitive: false
+  - test_plan:
+    opts:
+      title: (Optional) XCode Test Plan name
+      summary: The XCode Test Plans to shard if you do not have test plans enabled leave this blank
+      description: The XCode Target or Test Plan will be used to create shards if one is specified
+      is_required: false
       is_sensitive: false
   - scheme:
     opts:
@@ -134,6 +141,7 @@ inputs:
       summary: The step will print more verbose logs if enabled.
       description: The step will print more verbose logs if enabled.
       is_required: true
+      is_sensitive: false
       value_options:
         - "false"
         - "true"
