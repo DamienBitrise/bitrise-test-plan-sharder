@@ -145,7 +145,6 @@ function addTestPlans(main_group_uuid, shards){
             TEST_PLANS.push(shardName);
 
             log('\nAdding test plan to XCode Project\'s Resources');
-            myProj.addPbxGroup([], 'Resources', 'Resources', '"<group>"');
             myProj.addResourceFile(shardName, {lastKnownFileType: 'text'}, main_group_uuid);
 
             let skipTests = shards.filter((shard, index) => index != shardIndex);
