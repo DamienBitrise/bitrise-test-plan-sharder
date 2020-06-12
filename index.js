@@ -47,11 +47,12 @@ myProj.parse(function (err) {
         console.error('Error no tests found in Target');
         return;
     }
-    log('\nCreating ' + shards.length + ' Test Plan shards');
 
     if(TEST_PLAN == ''){
+        log('\nCreating ' + shards.length + ' Test Plan shards from Scheme');
         addTestPlans(main_group_uuid, shards);
     } else {
+        log('\nCreating ' + shards.length + ' Test Plan shards from Test Plan');
         updateTestPlan(shards);
     }
     
@@ -266,12 +267,6 @@ function getDefaulOptions(schemeJson){
     let undefinedBehaviorSanitizerEnabled = null;
     let targetForVariableExpansion = null;
     let codeCoverage = false;
-    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
-        let testAction = schemeJson.Scheme.TestAction;
-        if(testAction.codeCoverageEnabled){
-            codeCoverage = true;
-        }
-    }
     if(schemeJson.Scheme && schemeJson.Scheme.LaunchAction){
         let launchAction = schemeJson.Scheme.LaunchAction;
         // CommandLineArguments
@@ -310,9 +305,15 @@ function getDefaulOptions(schemeJson){
                 });
             }
         }
+    }
+    if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
+        let testAction = schemeJson.Scheme.TestAction;
+        if(testAction.codeCoverageEnabled){
+            codeCoverage = true;
+        }
         // targetForVariableExpansion
-        if(launchAction.MacroExpansion && launchAction.MacroExpansion.BuildableReference){
-            let ref = launchAction.MacroExpansion.BuildableReference;
+        if(testAction.MacroExpansion && testAction.MacroExpansion.BuildableReference){
+            let ref = testAction.MacroExpansion.BuildableReference;
             targetForVariableExpansion = {
                 containerPath: ref.ReferencedContainer,
                 identifier: ref.BlueprintIdentifier,
@@ -320,8 +321,8 @@ function getDefaulOptions(schemeJson){
             };
         }
         // undefinedBehaviorSanitizerEnabled
-        if(launchAction.enableUBSanitizer != null){
-            undefinedBehaviorSanitizerEnabled = launchAction.enableUBSanitizer == 'YES' ? true : false;
+        if(testAction.enableUBSanitizer != null){
+            undefinedBehaviorSanitizerEnabled = testAction.enableUBSanitizer == 'YES' ? true : false;
         }
         
     }
