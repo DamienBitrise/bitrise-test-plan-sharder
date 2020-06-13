@@ -63,7 +63,7 @@ myProj.parse(function (err) {
 
 // Update existing test plan
 function updateTestPlan(shards){
-    let testPlanPath = XCODE_PATH + '/' + TEST_PLAN;
+    let testPlanPath = XCODE_PATH + TEST_PLAN;
     fs.readFile( testPlanPath, function(err, testPlanData) {
         if (err) {
             console.error('Error reading test plan:',err);
@@ -71,10 +71,12 @@ function updateTestPlan(shards){
         }
         let jsonString = testPlanData.toString();
         let testPlanJson = JSON.parse(jsonString.replace(/\\\//g, "~"));
-        let otherTargets = testPlanJson.testTargets.filter((target) => target.name != TARGET)
+        let otherTargets = testPlanJson.testTargets.filter((target) => target.target.name != TARGET)
 
         const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
         const otherTargetsShards = shard(otherTargets, target_shard_size);
+
+        log('otherTargetsShards:', otherTargetsShards);
 
         // Create Test Plans
         shards.forEach((shard, shardIndex) => {
@@ -89,8 +91,10 @@ function updateTestPlan(shards){
             });
 
             let mainTarget = getMainTargetFromTestPlan(testPlanJson, skipTestNames);
+            log('mainTarget:', mainTarget);
 
             let shardTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
+            log('shardTargets:', shardTargets);
 
             // Disable other targets not in the shard
             let disabledShards = otherTargetsShards.filter((tmp, i) => i != shardIndex);
@@ -102,6 +106,7 @@ function updateTestPlan(shards){
                     allDisabledShards.push(disabledTarget);
                 })
             });
+            log('allDisabledShards:', allDisabledShards);
 
             log('Writing Test Plan to file');
 
