@@ -102,7 +102,7 @@ function updateTestPlan(shards){
             disabledShards.forEach((disabledShard) => {
                 disabledShard.forEach((target) => {
                     let disabledTarget = Object.assign({}, target)
-                    disabledTarget.enabled = 'false';
+                    disabledTarget.enabled = false;
                     allDisabledShards.push(disabledTarget);
                 })
             });
@@ -182,7 +182,7 @@ function addTestPlans(main_group_uuid, shards){
             disabledShards.forEach((disabledShard) => {
                 disabledShard.forEach((target) => {
                     let disabledTarget = Object.assign({}, target)
-                    disabledTarget.enabled = 'false';
+                    disabledTarget.enabled = false;
                     allDisabledShards.push(disabledTarget);
                 })
             });
