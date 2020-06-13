@@ -90,9 +90,22 @@ function updateTestPlan(shards){
 
             let mainTarget = getMainTargetFromTestPlan(testPlanJson, skipTestNames);
 
+            let shardTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
+
+            // Disable other targets not in the shard
+            let disabledShards = otherTargetsShards.filter((tmp, i) => i != shardIndex);
+            let allDisabledShards = [];
+            disabledShards.forEach((disabledShard) => {
+                disabledShard.forEach((target) => {
+                    let disabledTarget = Object.assign({}, target)
+                    disabledTarget.enabled = 'false';
+                    allDisabledShards.push(disabledTarget);
+                })
+            });
+
             log('Writing Test Plan to file');
 
-            let testPlan = createTestPlan(testPlanJson.defaultOptions, [mainTarget].concat(otherTargetsShards[shardIndex]));
+            let testPlan = createTestPlan(testPlanJson.defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards));
 
             fs.writeFileSync(shardName, testPlan);
 
@@ -156,9 +169,21 @@ function addTestPlans(main_group_uuid, shards){
 
             let mainTarget = getMainTarget(schemeJson, skipTestNames);
 
-            let otherTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
+            let shardTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
+
+            // Disable other targets not in the shard
+            let disabledShards = otherTargetsShards.filter((tmp, i) => i != shardIndex);
+            let allDisabledShards = [];
+            disabledShards.forEach((disabledShard) => {
+                disabledShard.forEach((target) => {
+                    let disabledTarget = Object.assign({}, target)
+                    disabledTarget.enabled = 'false';
+                    allDisabledShards.push(disabledTarget);
+                })
+            });
+            
             log('Writing Test Plan to file');
-            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(otherTargets)));
+            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
 
             console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
         })
