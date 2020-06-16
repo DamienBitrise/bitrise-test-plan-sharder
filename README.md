@@ -56,6 +56,10 @@ From the folder you downloaded this code open the terminal and run:
   * **Description:** The XCode Target to create Test Plans from
   * **Example:** `NotesUITests`
 
+**XCode Test Plan name** (optional)
+  * **Description:** The XCode Test Plan already in your project you want to shard. The file should be referenced relative to the XCode Project Path setting
+  * **Example:** `Notes.xctestplan`
+
 **XCode Scheme** (required)
   * **Description:** The XCode Scheme to test
   * **Example:** `Notes`
