@@ -58,6 +58,10 @@ description: |-
     * **Description:** The XCode Target to create Test Plans from
     * **Example:** `NotesUITests`
 
+  **XCode Test Plan name** (optional)
+    * **Description:** The XCode Test Plan already in your project you want to shard. The file should be referenced relative to the XCode Project Path setting
+    * **Example:** `Notes.xctestplan`
+
   **XCode Scheme** (required)
     * **Description:** The XCode Scheme to test
     * **Example:** `Notes`
@@ -116,8 +120,8 @@ inputs:
   - test_plan:
     opts:
       title: (Optional) XCode Test Plan name
-      summary: The XCode Test Plans to shard if you do not have test plans enabled leave this blank
-      description: The XCode Target or Test Plan will be used to create shards if one is specified
+      summary: The XCode Test Plans to shard if you do not have test plans enabled leave this blank. Note You will need to replace the existing test plan with the test plan shard in your fan out builds. eg. cp TestShard_0.xctestplan Notes.xctestplan
+      description: The XCode Test Plan will be used to create shards if one is specified
       is_required: false
       is_sensitive: false
   - scheme:
