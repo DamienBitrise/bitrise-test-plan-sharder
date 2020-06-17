@@ -239,7 +239,6 @@ function getOtherTargets(schemeJson){
                         }
                     }
                     let testTarget = {
-                        parallelizable : testableReference.parallelizable == 'YES' ? true : false,
                         target : {
                             containerPath : buildableReference.ReferencedContainer.replace(/\//g, "~"),
                             identifier : buildableReference.BlueprintIdentifier,
@@ -277,7 +276,6 @@ function getMainTarget(schemeJson, skippedShardTests){
                     }
                     let allSkippedTests = skippedTests.concat(skippedShardTests)
                     target = {
-                        "parallelizable" : testableReference.parallelizable == 'YES' ? true : false,
                         "skippedTests" : allSkippedTests,
                         "target" : {
                             "containerPath" : buildableReference.ReferencedContainer.replace(/\//g, "~"),
