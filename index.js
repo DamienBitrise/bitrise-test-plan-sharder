@@ -157,6 +157,8 @@ function addTestPlans(main_group_uuid, shards){
         const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
         const otherTargetsShards = shard(otherTargets, target_shard_size);
 
+        log('otherTargetsShards:', otherTargetsShards);
+
         // Create Test Plans
         shards.forEach((shard, shardIndex) => {
             let shardName = XCODE_PATH+'TestShard_'+shardIndex+'.xctestplan';
@@ -174,6 +176,8 @@ function addTestPlans(main_group_uuid, shards){
 
             let mainTarget = getMainTarget(schemeJson, skipTestNames);
 
+            log('mainTarget:', mainTarget);
+
             let shardTargets = otherTargetsShards.length > shardIndex ? otherTargetsShards[shardIndex] : [];
 
             // Disable other targets not in the shard
@@ -186,6 +190,7 @@ function addTestPlans(main_group_uuid, shards){
                     allDisabledShards.push(disabledTarget);
                 })
             });
+            log('allDisabledShards:', allDisabledShards);
             
             log('Writing Test Plan to file');
             fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
