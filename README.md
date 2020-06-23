@@ -48,7 +48,7 @@ From the folder you downloaded this code open the terminal and run:
   * **Example:** `$BITRISE_SOURCE_DIR/ios`
 
 
-**XCode Project** (required)
+**XCode Project** (required) 
   * **Description:** XCode Project name
   * **Example:** `Notes.xcodeproj`
 
