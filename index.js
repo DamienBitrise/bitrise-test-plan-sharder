@@ -226,7 +226,13 @@ function getOtherTargets(schemeJson){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
             log('\nScheme Testables: ', testAction);
-            testAction.Testables.TestableReference.forEach((testableReference) => {
+            let testables = [];
+            if(testAction.Testables instanceof Array){
+                testables = testAction.Testables;
+            } else {
+                testables = [testAction.Testables];
+            }
+            testables.TestableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO'  && buildableReference.BlueprintName != TARGET){
                     let skippedTests = null;
@@ -263,7 +269,13 @@ function getMainTarget(schemeJson, skippedShardTests){
     if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
-            testAction.Testables.TestableReference.forEach((testableReference) => {
+            let testables = [];
+            if(testAction.Testables instanceof Array){
+                testables = testAction.Testables;
+            } else {
+                testables = [testAction.Testables];
+            }
+            testables.TestableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO' && buildableReference.BlueprintName == TARGET){
                     let skippedTests = [];
