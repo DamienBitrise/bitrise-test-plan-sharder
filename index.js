@@ -224,6 +224,7 @@ function getOtherTargets(schemeJson){
     if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
+            log('\nScheme Testables: ', testAction.Testables);
             testAction.Testables.TestableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO'  && buildableReference.BlueprintName != TARGET){
