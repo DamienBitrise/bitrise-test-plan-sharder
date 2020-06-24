@@ -226,13 +226,13 @@ function getOtherTargets(schemeJson){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
             log('\nScheme Testables: ', testAction);
-            let testables = [];
-            if(testAction.Testables instanceof Array){
-                testables = testAction.Testables;
+            let testableReference = [];
+            if(testAction.Testables.TestableReference instanceof Array){
+                testableReference = testAction.Testables.TestableReference;
             } else {
-                testables = [testAction.Testables];
+                testableReference = [testAction.Testables.TestableReference];
             }
-            testables.TestableReference.forEach((testableReference) => {
+            testableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO'  && buildableReference.BlueprintName != TARGET){
                     let skippedTests = null;
@@ -269,13 +269,13 @@ function getMainTarget(schemeJson, skippedShardTests){
     if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
-            let testables = [];
-            if(testAction.Testables instanceof Array){
-                testables = testAction.Testables;
+            let testableReference = [];
+            if(testAction.Testables.TestableReference instanceof Array){
+                testableReference = testAction.Testables.TestableReference;
             } else {
-                testables = [testAction.Testables];
+                testableReference = [testAction.Testables.TestableReference];
             }
-            testables.TestableReference.forEach((testableReference) => {
+            testableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO' && buildableReference.BlueprintName == TARGET){
                     let skippedTests = [];
