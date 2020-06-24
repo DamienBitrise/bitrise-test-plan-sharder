@@ -149,6 +149,7 @@ function addTestPlans(main_group_uuid, shards){
         // Parse XML to JSON
         let jsonStr = parser.toJson(unescapedData, {reversible: true})
         let schemeJson = JSON.parse(jsonStr);
+        log('Scheme: ', schemeJson);
 
         // Get the Scheme default options
         let defaultOptions = getDefaulOptions(schemeJson);
@@ -224,7 +225,7 @@ function getOtherTargets(schemeJson){
     if(schemeJson.Scheme && schemeJson.Scheme.TestAction){
         let testAction = schemeJson.Scheme.TestAction;
         if(testAction.Testables){
-            log('\nScheme Testables: ', testAction.Testables);
+            log('\nScheme Testables: ', testAction);
             testAction.Testables.TestableReference.forEach((testableReference) => {
                 let buildableReference = testableReference.BuildableReference;
                 if(testableReference.skipped == 'NO'  && buildableReference.BlueprintName != TARGET){
