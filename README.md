@@ -30,7 +30,7 @@ export XCODE_PROJECT="Notes.xcodeproj"
 export SHARDS=2
 export TARGET="Notes"
 export SCHEME="NotesUITests"
-export TYPE=".swift"
+export DEBUG=".swift"
 ```
 
 **Running**
@@ -68,9 +68,9 @@ From the folder you downloaded this code open the terminal and run:
   * **Description:** The number of Test Plans to generate
   * **Example:** `2`
 
-**Test Class File Type (required)**
-  * **Description:** .swift or .m
-  * **Example:** `.swift`
+**Debug (required)**
+  * **Description:** Show verbose debug logs
+  * **Example:** `true`
 
 ## Outputs
 
