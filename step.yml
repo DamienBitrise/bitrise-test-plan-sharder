@@ -33,7 +33,7 @@ description: |-
   export SHARDS=2
   export TARGET="Notes"
   export SCHEME="NotesUITests"
-  export TYPE=".swift"
+  export DEBUG="false"
   ```
 
   **Running**
