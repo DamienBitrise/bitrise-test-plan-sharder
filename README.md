@@ -30,7 +30,7 @@ export XCODE_PROJECT="Notes.xcodeproj"
 export SHARDS=2
 export TARGET="Notes"
 export SCHEME="NotesUITests"
-export DEBUG=".swift"
+export DEBUG="false"
 ```
 
 **Running**
