@@ -47,22 +47,29 @@ myProj.parse(function (err) {
     const shards = shard(tests, shard_size);
     log('Shards: ', shards.length)
     let classNameShards = [];
-    shards.forEach((shard, shardIndex)=>{
-        classNameShards.push([]);
-        shard.forEach((test, i)=>{
-            let path = TEST_PATH+test.comment;
-            let testFile = fs.readFileSync(path, 'utf-8');
-            testFile.split(/\r?\n/).forEach((line) => {
-                if (line.includes('class')) {
-                    let searchStr = 'class';
-                    let classIdx = line.indexOf(searchStr)
-                    let endIdx = line.indexOf(':')
-                    let className = line.substring(classIdx+searchStr.length+1,endIdx);
-                    classNameShards[shardIndex].push(className);
-                }
+    if(TEST_PATH != '') {
+        shards.forEach((shard, shardIndex)=>{
+            classNameShards.push([]);
+            shard.forEach((test, i)=>{
+                let path = TEST_PATH+test.comment;
+                let testFile = fs.readFileSync(path, 'utf-8');
+                testFile.split(/\r?\n/).forEach((line) => {
+                    if (line.includes('class')) {
+                        let searchStr = 'class';
+                        let classIdx = line.indexOf(searchStr)
+                        let endIdx = line.indexOf(':')
+                        let className = line.substring(classIdx+searchStr.length+1,endIdx);
+                        classNameShards[shardIndex].push(className);
+                    }
+                });
             });
         });
-    });
+    } else {
+        shards.forEach((shard)=>{
+            let classNames = shard.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
+            classNameShards.push(classNames);
+        })
+    }
 
     if(DEBUG){
         classNameShards.forEach((shardTarget, index)=>{

@@ -122,7 +122,7 @@ inputs:
       title: Path where your test target tests are located
       summary: The path to the test cases in the file system
       description: All your test target test class files should be in this folder
-      is_required: true
+      is_required: false
       is_sensitive: false
   - test_plan:
     opts:
