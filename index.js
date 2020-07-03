@@ -4,6 +4,7 @@ const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TEST_PLAN = process.env.test_plan;
 const TARGET = process.env.target;
+const TEST_PATH = process.env.test_apth;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
@@ -11,6 +12,7 @@ console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
 console.log('TEST_PLAN:',TEST_PLAN)
 console.log('TARGET:',TARGET)
+console.log('TEST_PATH:',TEST_PATH)
 console.log('SCHEME:',SCHEME)
 console.log('SHARDS:',SHARDS)
 console.log('DEBUG:',DEBUG)
@@ -43,17 +45,55 @@ myProj.parse(function (err) {
     
     const shard_size = Math.ceil(tests.length / SHARDS);
     const shards = shard(tests, shard_size);
-    if(shards.length == 0){
+    log('Shards: ', shards.length)
+    let classNameShards = [];
+    shards.forEach((shard, shardIndex)=>{
+        classNameShards.push([]);
+        shard.forEach((test, i)=>{
+            let path = TEST_PATH+test.comment;
+            let testFile = fs.readFileSync(path, 'utf-8');
+            testFile.split(/\r?\n/).forEach((line) => {
+                if (line.includes('class')) {
+                    let searchStr = 'class';
+                    let classIdx = line.indexOf(searchStr)
+                    let endIdx = line.indexOf(':')
+                    let className = line.substring(classIdx+searchStr.length+1,endIdx);
+                    classNameShards[shardIndex].push(className);
+                }
+            });
+        });
+    });
+
+    if(DEBUG){
+        classNameShards.forEach((shardTarget, index)=>{
+            log('Shard['+index+'] has ' + shardTarget.length);
+            let duplicates = [];
+            classNameShards.forEach((shardCompare, i)=>{
+                if(index != i){
+                    shardTarget.forEach((sTarget, i)=>{
+                        shardCompare.forEach((sCompare, i)=>{
+                            if(sTarget == sCompare){
+                                duplicates.push(sTarget)
+                            }
+                        });
+                    })
+                }
+            });
+            log('Duplicates in Shard['+index+']', duplicates)
+        })
+    }
+    
+    if(classNameShards.length == 0){
         console.error('Error no tests found in Target');
         return;
     }
 
     if(TEST_PLAN == ''){
-        log('\nCreating ' + shards.length + ' Test Plan shards from Scheme');
-        addTestPlans(main_group_uuid, shards);
+        log('\nCreating ' + classNameShards.length + ' Test Plan shards from Scheme');
+        addTestPlans(main_group_uuid, classNameShards);
     } else {
         log('\nCreating ' + shards.length + ' Test Plan shards from Test Plan');
-        updateTestPlan(shards);
+        updateTestPlan(classNameShards);
     }
     
     let quotedAndCommaSeparated = "\"" + XCODE_PATH + TEST_PLANS.join("\",\""+XCODE_PATH) + "\"";
@@ -83,11 +123,10 @@ function updateTestPlan(shards){
             let shardName = XCODE_PATH+'TestShard_'+shardIndex+'.xctestplan';
             TEST_PLANS.push(shardName);
 
-            let skipTests = shards.filter((shard, index) => index != shardIndex);
+            let skipTestsShard = shards.filter((shard, index) => index != shardIndex);
             let skipTestNames = [];
-            skipTests.forEach((skipTest) => {
-                let tests = skipTest.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
-                skipTestNames = skipTestNames.concat(tests);
+            skipTestsShard.forEach((skipTests) => {
+                skipTestNames = skipTestNames.concat(skipTests);
             });
 
             let mainTarget = getMainTargetFromTestPlan(testPlanJson, skipTestNames);
@@ -106,7 +145,6 @@ function updateTestPlan(shards){
                     allDisabledShards.push(disabledTarget);
                 })
             });
-            log('allDisabledShards:', allDisabledShards);
 
             log('Writing Test Plan to file');
 
@@ -162,7 +200,7 @@ function addTestPlans(main_group_uuid, shards){
 
         // Create Test Plans
         shards.forEach((shard, shardIndex) => {
-            let shardName = XCODE_PATH+'TestShard_'+shardIndex+'.xctestplan';
+            let shardName = 'TestShard_'+shardIndex+'.xctestplan';
             TEST_PLANS.push(shardName);
 
             log('\nAdding test plan to XCode Project\'s Resources');
@@ -171,8 +209,7 @@ function addTestPlans(main_group_uuid, shards){
             let skipTests = shards.filter((shard, index) => index != shardIndex);
             let skipTestNames = [];
             skipTests.forEach((skipTest) => {
-                let tests = skipTest.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
-                skipTestNames = skipTestNames.concat(tests);
+                skipTestNames = skipTestNames.concat(skipTest);
             });
 
             let mainTarget = getMainTarget(schemeJson, skipTestNames);
@@ -191,7 +228,6 @@ function addTestPlans(main_group_uuid, shards){
                     allDisabledShards.push(disabledTarget);
                 })
             });
-            log('allDisabledShards:', allDisabledShards);
             
             log('Writing Test Plan to file');
             fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
@@ -441,6 +477,7 @@ function log(msg, obj){
 
 function getRecursiveTests(myProj, target_uuid, tests = []){
     const target = myProj.getPBXGroupByKey(target_uuid);
+    // log('Checking=====:', target_uuid)
     if(target && target.children && target.children.length > 0){
         target.children.forEach((test) => {
             if(test && test.comment && (test.comment.indexOf('.swift') != -1 || test.comment.indexOf('.m') != -1)){

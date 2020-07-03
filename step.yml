@@ -117,6 +117,13 @@ inputs:
       description: The XCode Target or Test Plan will be used to create shards
       is_required: true
       is_sensitive: false
+  - test_path:
+    opts:
+      title: Path where your test target tests are located
+      summary: The path to the test cases in the file system
+      description: All your test target test class files should be in this folder
+      is_required: true
+      is_sensitive: false
   - test_plan:
     opts:
       title: (Optional) XCode Test Plan name

@@ -29,6 +29,7 @@ export SOURCE_DIR="/User/var/git/ios"
 export XCODE_PROJECT="Notes.xcodeproj"
 export SHARDS=2
 export TARGET="Notes"
+export TEST_PATH="/User/vagrant/git/MyProject/UITests/"
 export SCHEME="NotesUITests"
 export DEBUG="false"
 ```
@@ -55,6 +56,10 @@ From the folder you downloaded this code open the terminal and run:
 **XCode Target** (required)
   * **Description:** The XCode Target to create Test Plans from
   * **Example:** `NotesUITests`
+
+**Test Path** (required)
+  * **Description:** Path to your targets test classes
+  * **Example:** `/User/vagrant/git/MyProject/UITests/`
 
 **XCode Test Plan name** (optional)
   * **Description:** The XCode Test Plan already in your project you want to shard. The file should be referenced relative to the XCode Project Path setting
