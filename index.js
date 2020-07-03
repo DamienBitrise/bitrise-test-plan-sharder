@@ -4,7 +4,7 @@ const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TEST_PLAN = process.env.test_plan;
 const TARGET = process.env.target;
-const TEST_PATH = process.env.test_apth;
+const TEST_PATH = process.env.test_path;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
 
