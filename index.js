@@ -48,20 +48,25 @@ myProj.parse(function (err) {
     log('Shards: ', shards.length)
     let classNameShards = [];
     if(TEST_PATH != '') {
+        let files = walkSync(TEST_PATH, []);
         shards.forEach((shard, shardIndex)=>{
             classNameShards.push([]);
             shard.forEach((test, i)=>{
-                let path = TEST_PATH+test.comment;
-                let testFile = fs.readFileSync(path, 'utf-8');
-                testFile.split(/\r?\n/).forEach((line) => {
-                    if (line.includes('class')) {
-                        let searchStr = 'class';
-                        let classIdx = line.indexOf(searchStr)
-                        let endIdx = line.indexOf(':')
-                        let className = line.substring(classIdx+searchStr.length+1,endIdx);
-                        classNameShards[shardIndex].push(className);
-                    }
-                });
+                let path = files.find((file) => file.indexOf(test.comment) != -1);
+                try{
+                    let testFile = fs.readFileSync(path, 'utf-8');
+                    testFile.split(/\r?\n/).forEach((line) => {
+                        if (line.includes('class')) {
+                            let searchStr = 'class';
+                            let classIdx = line.indexOf(searchStr)
+                            let endIdx = line.indexOf(':')
+                            let className = line.substring(classIdx+searchStr.length+1,endIdx);
+                            classNameShards[shardIndex].push(className);
+                        }
+                    });
+                } catch(err){
+                    log('Error parsing file: ' + path, err);
+                }
             });
         });
     } else {
@@ -107,6 +112,23 @@ myProj.parse(function (err) {
     // TODO Use Envman to save these globally
     process.env.test_plans = quotedAndCommaSeparated;
 });
+
+// List all files in a directory in Node.js recursively in a synchronous fashion
+function walkSync(dir, filelist) {
+    var path = path || require('path');
+    var fs = fs || require('fs'),
+        files = fs.readdirSync(dir);
+    filelist = filelist || [];
+    files.forEach(function(file) {
+        if (fs.statSync(path.join(dir, file)).isDirectory()) {
+            filelist = walkSync(path.join(dir, file), filelist);
+        }
+        else {
+            filelist.push(path.join(dir, file));
+        }
+    });
+    return filelist;
+};
 
 // Update existing test plan
 function updateTestPlan(shards){
