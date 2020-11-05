@@ -106,7 +106,7 @@ myProj.parse(function (err) {
         log('\nCreating ' + classNameShards.length + ' Test Plan shards from Scheme');
         addTestPlans(main_group_uuid, classNameShards);
     } else {
-        log('\nCreating ' + shards.length + ' Test Plan shards from Test Plan');
+        log('\nCreating ' + classNameShards.length + ' Test Plan shards from Test Plan');
         updateTestPlan(classNameShards);
     }
 
