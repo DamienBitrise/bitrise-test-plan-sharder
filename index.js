@@ -42,39 +42,41 @@ myProj.parse(function (err) {
 
     const tests = getRecursiveTests(myProj, target_uuid, []);
     log('Tests Found in Target:',tests.length);
-    
-    const shard_size = Math.ceil(tests.length / SHARDS);
-    const shards = shard(tests, shard_size);
-    log('Shards: ', shards.length)
-    let classNameShards = [];
+    let classNameTests = []
+
     if(TEST_PATH != '') {
         let files = walkSync(TEST_PATH, []);
-        shards.forEach((shard, shardIndex)=>{
-            classNameShards.push([]);
-            shard.forEach((test, i)=>{
-                let path = files.find((file) => file.indexOf(test.comment) != -1);
-                try{
-                    let testFile = fs.readFileSync(path, 'utf-8');
-                    testFile.split(/\r?\n/).forEach((line) => {
-                        if (line.includes('class')) {
-                            let searchStr = 'class';
-                            let classIdx = line.indexOf(searchStr)
-                            let endIdx = line.indexOf(':')
-                            let className = line.substring(classIdx+searchStr.length+1,endIdx);
-                            classNameShards[shardIndex].push(className);
-                        }
-                    });
-                } catch(err){
-                    log('Error parsing file: ' + path, err);
-                }
-            });
+        tests.forEach((test, testIndex)=>{
+            let path = files.find((file) => file.indexOf(test.comment) != -1);
+            try{
+                let testFile = fs.readFileSync(path, 'utf-8');
+                testFile.split(/\r?\n/).forEach((line) => {
+                    if (line.includes('class')) {
+                        let searchStr = 'class';
+                        let classIdx = line.indexOf(searchStr)
+                        let endIdx = line.indexOf(':')
+                        let className = line.substring(classIdx+searchStr.length+1,endIdx);
+                        classNameTests.push(className);
+                    }
+                });
+            } catch(err){
+                log('Error parsing file: ' + path, err);
+            }
         });
     } else {
-        shards.forEach((shard)=>{
-            let classNames = shard.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
-            classNameShards.push(classNames);
-        })
+        classNameTests = tests.map((test) => test.comment.substring(0, test.comment.indexOf('.')));
     }
+
+    // filter out duplicates
+    classNameTests = classNameTests.filter(function(elem, pos) {
+        return classNameTests.indexOf(elem) == pos;
+    })
+
+    log("Tests found in test path: ", classNameTests.length);
+
+    const shard_size = Math.ceil(classNameTests.length / SHARDS);
+    const classNameShards = shard(classNameTests, shard_size);
+    log('Shards: ', classNameShards.length)
 
     if(DEBUG){
         classNameShards.forEach((shardTarget, index)=>{
@@ -94,7 +96,7 @@ myProj.parse(function (err) {
             log('Duplicates in Shard['+index+']', duplicates)
         })
     }
-    
+
     if(classNameShards.length == 0){
         console.error('Error no tests found in Target');
         return;
@@ -107,7 +109,7 @@ myProj.parse(function (err) {
         log('\nCreating ' + shards.length + ' Test Plan shards from Test Plan');
         updateTestPlan(classNameShards);
     }
-    
+
     let quotedAndCommaSeparated = "\"" + XCODE_PATH + TEST_PLANS.join("\",\""+XCODE_PATH) + "\"";
     // TODO Use Envman to save these globally
     process.env.test_plans = quotedAndCommaSeparated;
