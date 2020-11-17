@@ -156,6 +156,16 @@ inputs:
       value_options:
         - "false"
         - "true"
+  - parallelizable: "false"
+    opts:
+      title: "Enable Simulator Parallelization"
+      summary: Each shard will run its tests in parallel if enabled.
+      description: Each shard will run its tests in parallel if enabled.
+      is_required: true
+      is_sensitive: false
+      value_options:
+        - "false"
+        - "true"
 outputs:
   - TEST_PLANS:
     opts:
