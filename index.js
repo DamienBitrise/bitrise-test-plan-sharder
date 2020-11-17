@@ -262,7 +262,7 @@ function addTestPlans(main_group_uuid, shards){
             });
             
             log('Writing Test Plan to file');
-            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
+            fs.writeFileSync(XCODE_PATH + shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
 
             console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
         })
