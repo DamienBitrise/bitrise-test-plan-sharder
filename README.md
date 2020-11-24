@@ -76,6 +76,10 @@ From the folder you downloaded this code open the terminal and run:
 **Debug (required)**
   * **Description:** Show verbose debug logs
   * **Example:** `true`
+  
+  **Parallelizable (optional)**
+    * **Description:** Allow each shard to run multiple simulators in parallel
+    * **Example:** `true`
 
 ## Outputs
 

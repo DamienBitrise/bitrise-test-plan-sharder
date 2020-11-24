@@ -73,6 +73,10 @@ description: |-
   **Debug**
     * **Description:** Create verbose debug logs
     * **Example:** YES / NO
+    
+  **Parallelizable**
+    * **Description:** Allow shards to run tests with multiple simulators in parallel
+    * **Example:** YES / NO
 
   ## Outputs
 
