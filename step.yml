@@ -73,6 +73,10 @@ description: |-
   **Debug**
     * **Description:** Create verbose debug logs
     * **Example:** YES / NO
+    
+  **Parallelizable**
+    * **Description:** Allow shards to run tests with multiple simulators in parallel
+    * **Example:** YES / NO
 
   ## Outputs
 
@@ -151,6 +155,16 @@ inputs:
       title: "Enable Debug Mode"
       summary: The step will print more verbose logs if enabled.
       description: The step will print more verbose logs if enabled.
+      is_required: true
+      is_sensitive: false
+      value_options:
+        - "false"
+        - "true"
+  - parallelizable: "false"
+    opts:
+      title: "Enable Simulator Parallelization"
+      summary: Each shard will run its tests in parallel if enabled.
+      description: Each shard will run its tests in parallel if enabled.
       is_required: true
       is_sensitive: false
       value_options:

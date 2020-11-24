@@ -7,6 +7,7 @@ const TARGET = process.env.target;
 const TEST_PATH = process.env.test_path;
 const SCHEME = process.env.scheme;
 const DEBUG = process.env.debug_mode == 'true' ? true : false;
+const PARALLELIZABLE = process.env.parallelizable == 'true' ? true : false;
 
 console.log('XCODE_PATH:',XCODE_PATH)
 console.log('XCODE_PROJECT:',XCODE_PROJECT)
@@ -261,7 +262,7 @@ function addTestPlans(main_group_uuid, shards){
             });
             
             log('Writing Test Plan to file');
-            fs.writeFileSync(shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
+            fs.writeFileSync(XCODE_PATH + shardName, createTestPlan(defaultOptions, [mainTarget].concat(shardTargets).concat(allDisabledShards)));
 
             console.log('Test Plan Shard '+shardIndex+' Created:', shardName);
         })
@@ -358,6 +359,7 @@ function getMainTarget(schemeJson, skippedShardTests){
                     let allSkippedTests = skippedTests.concat(skippedShardTests)
                     target = {
                         "skippedTests" : allSkippedTests,
+                        "parallelizable" : PARALLELIZABLE,
                         "target" : {
                             "containerPath" : buildableReference.ReferencedContainer.replace(/\//g, "~"),
                             "identifier" : buildableReference.BlueprintIdentifier,
