@@ -1,4 +1,6 @@
 // Inputs
+const XCODE_PATH = process.env.path_to_xcode + '/';
+const XCODE_PROJECT = process.env.xcode_project;
 const SHARDS = process.env.shards;
 const TEST_PLAN = process.env.test_plan;
 const TARGET = process.env.target;
