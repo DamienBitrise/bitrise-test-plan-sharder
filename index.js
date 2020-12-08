@@ -491,13 +491,17 @@ function createTestPlan(defaultOptions, testTargets){
 
 function shard(arr, numShards) {
     const newArr = [];
+    // initialize array of shards
     for (let s = 0; s < numShards; s++) {
         newArr.push([])
     }
+
+    // iterate through shards to maintain balance
     for (let i = 0; i < arr.length; i++) {
-        const mod = i % numCols
+        const mod = i % numShards
         newArr[mod].push(arr[i])
     }
+
     return newArray
 }
 
