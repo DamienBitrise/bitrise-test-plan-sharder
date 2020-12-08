@@ -502,7 +502,7 @@ function shard(arr, numShards) {
         newArr[mod].push(arr[i])
     }
 
-    return newArray
+    return newArr
 }
 
 function log(msg, obj){
