@@ -75,8 +75,7 @@ myProj.parse(function (err) {
 
     log("Tests found in test path: ", classNameTests.length);
 
-    const shard_size = Math.ceil(classNameTests.length / SHARDS);
-    const classNameShards = shard(classNameTests, shard_size);
+    const classNameShards = shard(classNameTests, SHARDS);
     log('Shards: ', classNameShards.length)
 
     if(DEBUG){
@@ -145,8 +144,7 @@ function updateTestPlan(shards){
         let testPlanJson = JSON.parse(jsonString.replace(/\\\//g, "~"));
         let otherTargets = testPlanJson.testTargets.filter((target) => target.target.name != TARGET)
 
-        const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
-        const otherTargetsShards = shard(otherTargets, target_shard_size);
+        const otherTargetsShards = shard(otherTargets, SHARDS);
 
         log('otherTargetsShards:', otherTargetsShards);
 
@@ -225,8 +223,7 @@ function addTestPlans(main_group_uuid, shards){
         let defaultOptions = getDefaulOptions(schemeJson);
 
         let otherTargets = getOtherTargets(schemeJson);
-        const target_shard_size = Math.ceil(otherTargets.length / SHARDS);
-        const otherTargetsShards = shard(otherTargets, target_shard_size);
+        const otherTargetsShards = shard(otherTargets, SHARDS);
 
         log('otherTargetsShards:', otherTargetsShards);
 
@@ -492,14 +489,20 @@ function createTestPlan(defaultOptions, testTargets){
     return JSON.stringify(testPlan).replace(/~/g, '\\/');
 }
 
-function shard(arr, howMany) {
-    let newArr = []; start = 0; end = howMany;
-    for(let i=1; i<= Math.ceil(arr.length / howMany); i++) {
-        newArr.push(arr.slice(start, end));
-        start = start + howMany;
-        end = end + howMany
+function shard(arr, numShards) {
+    const newArr = [];
+    // initialize array of shards
+    for (let s = 0; s < numShards; s++) {
+        newArr.push([])
     }
-    return newArr;
+
+    // iterate through shards to maintain balance
+    for (let i = 0; i < arr.length; i++) {
+        const mod = i % numShards
+        newArr[mod].push(arr[i])
+    }
+
+    return newArr
 }
 
 function log(msg, obj){
